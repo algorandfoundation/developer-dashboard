@@ -7,7 +7,8 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  ReferenceDot
 } from 'recharts';
 
 // TypeScript interfaces
@@ -58,6 +59,9 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
   const [repoFilter, setRepoFilter] = useState<RepoFilter>('all');
   const [parsedData, setParsedData] = useState<CommitEntry[]>([]);
   const [maxDate, setMaxDate] = useState<Date | null>(null);
+  const [devFilter, setDevFilter] = useState<string>('');
+  const [sortBy, setSortBy] = useState<'dev' | 'repo' | 'commits'>('commits');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Theme colors
   const theme = {
@@ -73,7 +77,8 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
       tableRowEven: "#ffffff",
       tableRowOdd: "#f9fafb",
       buttonActive: "#2d2df1",
-      buttonInactive: "#94a3b8"
+      buttonInactive: "#94a3b8",
+      buttonActiveText: "#17cac6"
     },
     dark: {
       bg: "#001324",
@@ -87,7 +92,8 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
       tableRowEven: "#0a192f",
       tableRowOdd: "#112240",
       buttonActive: "#17cac6",
-      buttonInactive: "#475569"
+      buttonInactive: "#475569",
+      buttonActiveText: "#ffffff"
     }
   };
 
@@ -256,6 +262,36 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
     return data.filter(point => new Date(point.date).getTime() >= cutoffTime);
   };
 
+  // Identify month-end data points
+  const getMonthEndDataPoints = (dataPoints: DevDataPoint[]) => {
+    if (dataPoints.length === 0) return [];
+    
+    const monthEndPoints: DevDataPoint[] = [];
+    
+    // Sort data by date
+    const sortedData = [...dataPoints].sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    
+    for (let i = 0; i < sortedData.length; i++) {
+      const currentDate = new Date(sortedData[i].date);
+      
+      // Check if this is the last day of the month
+      const nextDay = new Date(currentDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      
+      const isMonthEnd = nextDay.getMonth() !== currentDate.getMonth();
+      
+      // Add to month-end points if it's the last day of month
+      // or if it's the last point in our dataset
+      if (isMonthEnd || i === sortedData.length - 1) {
+        monthEndPoints.push(sortedData[i]);
+      }
+    }
+    
+    return monthEndPoints;
+  };
+
   // Handle slider change
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSliderValue(parseInt(e.target.value, 10));
@@ -293,6 +329,58 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
       default:
         return commitData;
     }
+  };
+
+  // Get filtered and sorted commit data
+  const getFilteredAndSortedCommitData = () => {
+    // First apply repo filter
+    let filteredData = getFilteredCommitData();
+    
+    // Then apply developer filter if it exists
+    if (devFilter.trim()) {
+      const searchTerm = devFilter.toLowerCase().trim();
+      filteredData = filteredData.filter(entry => 
+        entry.dev.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    // Sort the data
+    return [...filteredData].sort((a, b) => {
+      let comparison = 0;
+      
+      if (sortBy === 'dev') {
+        comparison = a.dev.localeCompare(b.dev);
+      } else if (sortBy === 'repo') {
+        comparison = a.repo.localeCompare(b.repo);
+      } else { // commits
+        comparison = a.totalCommits - b.totalCommits;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  };
+
+  // Handle sort change
+  const handleSortChange = (columnName: 'dev' | 'repo' | 'commits') => {
+    if (sortBy === columnName) {
+      // Toggle sort order if clicking the same column
+      setSortOrder(prevOrder => prevOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new sort column and default to descending order
+      setSortBy(columnName);
+      setSortOrder('desc');
+    }
+  };
+
+  // Check if a date is at the end of a month
+  const isMonthEnd = (dateStr: string): boolean => {
+    const date = new Date(dateStr);
+    // Create a new date for the next day
+    const nextDay = new Date(date);
+    nextDay.setDate(date.getDate() + 1);
+    
+    // If the month changes, this was the end of a month
+    return nextDay.getMonth() !== date.getMonth();
   };
 
   if (loading) {
@@ -390,6 +478,27 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
               name="Active Developers"
               strokeWidth={2}
             />
+            {/* Add reference dots and labels for month-end points */}
+            {displayData
+              .filter(point => isMonthEnd(point.date))
+              .map((point, index) => (
+                <ReferenceDot 
+                  key={`month-end-${index}`} 
+                  x={point.date} 
+                  y={point.activeDevs} 
+                  r={3} 
+                  fill= {darkMode ? "#2d2df1" : "#001324"}
+                  label={{
+                    value: point.activeDevs,
+                    position: "top",
+                    fill: darkMode ? "#ffffff" : "#001324",
+                    fontSize: 12,
+                    fontWeight: "bold",
+                    dy: -5
+                  }}
+                />
+              ))
+            }
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -428,7 +537,7 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
               className="px-3 py-1 text-xs md:text-sm font-medium"
               style={{ 
                 backgroundColor: timeFilter === 'last30d' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-                color: timeFilter === 'last30d' ? currentTheme.secondary : currentTheme.text,
+                color: timeFilter === 'last30d' ? currentTheme.buttonActiveText : currentTheme.text,
               }}
             >
               Last 30 Days
@@ -438,7 +547,7 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
               className="px-3 py-1 text-xs md:text-sm font-medium"
               style={{ 
                 backgroundColor: timeFilter === 'allTime' ? currentTheme.buttonActive : currentTheme.buttonInactive, 
-                color: timeFilter === 'allTime' ? currentTheme.secondary : currentTheme.text,
+                color: timeFilter === 'allTime' ? currentTheme.buttonActiveText : currentTheme.text,
               }}
             >
               All Time
@@ -676,7 +785,7 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
               className="px-3 py-1 text-xs font-medium rounded-md"
               style={{ 
                 backgroundColor: repoFilter === 'all' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-                color: repoFilter === 'all' ? currentTheme.secondary : currentTheme.text,
+                color: repoFilter === 'all' ? currentTheme.buttonActiveText : currentTheme.text,
               }}
             >
               All
@@ -686,7 +795,7 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
               className="px-3 py-1 text-xs font-medium rounded-md"
               style={{ 
                 backgroundColor: repoFilter === 'foundation' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-                color: repoFilter === 'foundation' ? currentTheme.secondary : currentTheme.text,
+                color: repoFilter === 'foundation' ? currentTheme.buttonActiveText : currentTheme.text,
               }}
             >
               Algorand Foundation
@@ -696,7 +805,7 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
               className="px-3 py-1 text-xs font-medium rounded-md"
               style={{ 
                 backgroundColor: repoFilter === 'core' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-                color: repoFilter === 'core' ? currentTheme.secondary : currentTheme.text,
+                color: repoFilter === 'core' ? currentTheme.buttonActiveText : currentTheme.text,
               }}
             >
               Algorand Core
@@ -706,11 +815,37 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
               className="px-3 py-1 text-xs font-medium rounded-md"
               style={{ 
                 backgroundColor: repoFilter === 'ecosystem' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-                color: repoFilter === 'ecosystem' ? currentTheme.secondary : currentTheme.text,
+                color: repoFilter === 'ecosystem' ? currentTheme.buttonActiveText : currentTheme.text,
               }}
             >
               Ecosystem
             </button>
+          </div>
+        </div>
+        
+        {/* Developer search filter */}
+        <div className="mb-4">
+          <div className="flex items-center">
+            <label 
+              htmlFor="devFilter"
+              className="mr-2 text-xs md:text-sm font-medium" 
+              style={{ color: currentTheme.primary }}
+            >
+              Search Developer:
+            </label>
+            <input
+              id="devFilter"
+              type="text"
+              value={devFilter}
+              onChange={(e) => setDevFilter(e.target.value)}
+              placeholder="Filter by developer name..."
+              className="px-3 py-1 text-xs md:text-sm rounded-md w-full max-w-xs"
+              style={{ 
+                backgroundColor: currentTheme.controlsBg,
+                color: currentTheme.text,
+                border: `1px solid ${currentTheme.tableBorder}`
+              }}
+            />
           </div>
         </div>
         
@@ -724,22 +859,60 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
           </div>
         ) : (
           <div className="overflow-x-auto" style={{ maxHeight: "400px", overflowY: "auto" }}>
+            {/* Results count */}
+            <div className="mb-2 text-xs" style={{ color: currentTheme.text }}>
+              Showing {getFilteredAndSortedCommitData().length} results
+              {devFilter && ` for "${devFilter}"`}
+            </div>
             <table className="w-full" style={{ color: currentTheme.text }}>
               <thead style={{ position: "sticky", top: 0, zIndex: 1 }}>
                 <tr style={{ backgroundColor: currentTheme.tableHeader }}>
-                  <th className="py-1 md:py-2 px-2 md:px-4 text-left border-b text-xs md:text-sm" style={{ borderColor: currentTheme.tableBorder }}>
-                    Developer
+                  <th 
+                    className="py-1 md:py-2 px-2 md:px-4 text-left border-b text-xs md:text-sm cursor-pointer" 
+                    style={{ borderColor: currentTheme.tableBorder }}
+                    onClick={() => handleSortChange('dev')}
+                  >
+                    <div className="flex items-center">
+                      Developer
+                      {sortBy === 'dev' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
                   </th>
-                  <th className="py-1 md:py-2 px-2 md:px-4 text-left border-b text-xs md:text-sm" style={{ borderColor: currentTheme.tableBorder }}>
-                    Repository
+                  <th 
+                    className="py-1 md:py-2 px-2 md:px-4 text-left border-b text-xs md:text-sm cursor-pointer" 
+                    style={{ borderColor: currentTheme.tableBorder }}
+                    onClick={() => handleSortChange('repo')}
+                  >
+                    <div className="flex items-center">
+                      Repository
+                      {sortBy === 'repo' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
                   </th>
-                  <th className="py-1 md:py-2 px-2 md:px-4 text-right border-b text-xs md:text-sm" style={{ borderColor: currentTheme.tableBorder }}>
-                    Commits
+                  <th 
+                    className="py-1 md:py-2 px-2 md:px-4 text-right border-b text-xs md:text-sm cursor-pointer" 
+                    style={{ borderColor: currentTheme.tableBorder }}
+                    onClick={() => handleSortChange('commits')}
+                  >
+                    <div className="flex items-center justify-end">
+                      Commits
+                      {sortBy === 'commits' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {getFilteredCommitData().map((entry, index) => (
+                {getFilteredAndSortedCommitData().map((entry, index) => (
                   <tr 
                     key={`${entry.dev}-${entry.repo}`}
                     style={{ 
