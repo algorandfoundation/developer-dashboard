@@ -59,6 +59,7 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
   const [timeFilter, setTimeFilter] = useState<'last30d' | 'last90d' | 'allTime'>('last30d');
   const [repoFilter, setRepoFilter] = useState<RepoFilter>('all');
   const [parsedData, setParsedData] = useState<CommitEntry[]>([]);
+  const [sliderValue, setSliderValue] = useState<number>(70);
   const [maxDate, setMaxDate] = useState<Date | null>(null);
   const [devFilter, setDevFilter] = useState<string>('');
   const [sortBy, setSortBy] = useState<'dev' | 'repo' | 'commits'>('commits');
@@ -249,13 +250,6 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
           const startDate = new Date(formattedData[0].date);
           const endDate = new Date(formattedData[formattedData.length - 1].date);
           setDateRange([startDate, endDate]);
-          
-          // Set default selection to start at 70% of the timeline
-          const totalTimespan = endDate.getTime() - startDate.getTime();
-          const cutoffTime = startDate.getTime() + (totalTimespan * 0.7);
-          const defaultStartDate = new Date(cutoffTime);
-          
-          setSelectedDateRange([defaultStartDate, endDate]);
         }
       } catch (err) {
         setError("Error fetching data. Please check your URL and try again.");
@@ -268,33 +262,20 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
     fetchData();
   }, [dataUrl]);
 
-  // Get filtered data based on selected range from brush
   const filteredData = () => {
     if (data.length === 0) return [];
     
-    // If no range selected yet, return all data
-    if (!selectedDateRange) return data;
+    // Calculate cutoff date based on slider value (0-100%)
+    const totalTimespan = dateRange[1].getTime() - dateRange[0].getTime();
+    const cutoffTime = dateRange[0].getTime() + (totalTimespan * (sliderValue / 100));
     
-    // Filter data to only include points within the selected date range
-    return data.filter(point => {
-      const pointDate = new Date(point.date).getTime();
-      return pointDate >= selectedDateRange[0].getTime() && 
-             pointDate <= selectedDateRange[1].getTime();
-    });
+    // Filter data to only include points after the cutoff date
+    return data.filter(point => new Date(point.date).getTime() >= cutoffTime);
   };
 
-  // Handle brush change
-  const handleBrushChange = (brushData: any) => {
-    if (!brushData || brushData.startIndex === undefined || brushData.endIndex === undefined) return;
-    
-    // Get the actual date values from the data array based on indices
-    const startIndex = Math.max(0, Math.min(brushData.startIndex, data.length - 1));
-    const endIndex = Math.max(0, Math.min(brushData.endIndex, data.length - 1));
-    
-    const startDate = new Date(data[startIndex].date);
-    const endDate = new Date(data[endIndex].date);
-    
-    setSelectedDateRange([startDate, endDate]);
+  // Handle slider change
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSliderValue(parseFloat(e.target.value));
   };
 
   // Identify month-end data points
@@ -558,52 +539,41 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
           </LineChart>
         </ResponsiveContainer>
         
-        {/* Separate Brush Chart */}
+        {/* Date-based Slider Control */}
         <div className="mt-6">
           <p className="text-sm mb-2" style={{ color: currentTheme.text }}>
             Select date range:
           </p>
-          <ResponsiveContainer width="100%" height={60}>
-            <LineChart
-              data={data}
-              margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
-            >
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 8, fill: currentTheme.text }}
-                stroke={currentTheme.text}
-                height={20}
-                scale="time"
-              />
-              <Line
-                type="monotone"
-                dataKey="activeDevs"
-                stroke={currentTheme.primary}
-                dot={false}
-                strokeWidth={1}
-              />
-              <Brush 
-                dataKey="date"
-                height={30}
-                stroke={currentTheme.primary}
-                fill={currentTheme.controlsBg}
-                fillOpacity={0.3}
-                strokeOpacity={0.8}
-                tickFormatter={(value) => ''}
-                onChange={handleBrushChange}
-                travellerWidth={10}
-                padding={{ left: 20, right: 20 }}
-                gap={2}
-                startIndex={data.length > 0 ? Math.floor(data.length * 0.7) : undefined}
-                endIndex={data.length > 0 ? data.length - 1 : undefined}
-              />
-            </LineChart>
-          </ResponsiveContainer>
           
-          {/* Selection info display */}
-          {selectedDateRange && (
+          <div className="px-4 py-2" style={{ backgroundColor: darkMode ? '#1a2535' : '#f1f5f9', borderRadius: '8px' }}>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="0.1"
+              value={sliderValue}
+              onChange={(e) => setSliderValue(parseFloat(e.target.value))}
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+              style={{ 
+                backgroundColor: darkMode ? "#1e3a5f" : "#d1d5db",
+                accentColor: currentTheme.primary,
+                WebkitAppearance: "none",
+                height: "12px",
+                borderRadius: "6px",
+                background: `linear-gradient(to right, ${currentTheme.primary} 0%, ${currentTheme.primary} ${sliderValue}%, ${currentTheme.buttonInactive} ${sliderValue}%, ${currentTheme.buttonInactive} 100%)`,
+              }}
+            />
+            
+            <div className="flex justify-between mt-1 text-xs" style={{ color: currentTheme.text }}>
+              <span>{data.length > 0 ? new Date(data[0].date).toLocaleDateString() : ''}</span>
+              <span>{data.length > 0 ? new Date(data[data.length - 1].date).toLocaleDateString() : ''}</span>
+            </div>
+          </div>
+          
+          {/* Display current selection */}
+          {dateRange && (
             <div className="mt-2 text-xs text-center" style={{ color: currentTheme.text }}>
-              Selected: {selectedDateRange[0].toLocaleDateString()} - {selectedDateRange[1].toLocaleDateString()}
+              Showing data from: {data.length > 0 ? new Date(displayData[0]?.date || data[0].date).toLocaleDateString() : ''}
             </div>
           )}
         </div>
