@@ -8,7 +8,8 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  ReferenceDot
+  ReferenceDot,
+  Brush
 } from 'recharts';
 
 // TypeScript interfaces
@@ -49,13 +50,13 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<[Date, Date]>([new Date(), new Date()]);
-  const [sliderValue, setSliderValue] = useState<number>(70); // Default to 70% of time range
+  const [selectedDateRange, setSelectedDateRange] = useState<[Date, Date] | null>(null);
   const [darkMode, setDarkMode] = useState<boolean>(initialDarkMode);
   const [commitData, setCommitData] = useState<AggregatedCommit[]>([]);
   const [devLeaderboardData, setDevLeaderboardData] = useState<DevTotalCommits[]>([]);
   const [commitLoading, setCommitLoading] = useState<boolean>(true);
   const [commitError, setCommitError] = useState<string | null>(null);
-  const [timeFilter, setTimeFilter] = useState<'last30d' | 'allTime'>('last30d');
+  const [timeFilter, setTimeFilter] = useState<'last30d' | 'last90d' | 'allTime'>('last30d');
   const [repoFilter, setRepoFilter] = useState<RepoFilter>('all');
   const [parsedData, setParsedData] = useState<CommitEntry[]>([]);
   const [maxDate, setMaxDate] = useState<Date | null>(null);
@@ -78,7 +79,7 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
       tableRowOdd: "#f9fafb",
       buttonActive: "#2d2df1",
       buttonInactive: "#94a3b8",
-      buttonActiveText: "#17cac6"
+      buttonActiveText: "#ffffff"
     },
     dark: {
       bg: "#001324",
@@ -100,18 +101,28 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
   const currentTheme = darkMode ? theme.dark : theme.light;
 
   // Process data based on time filter
-  const processDataByTimeFilter = (allData: CommitEntry[], filter: 'last30d' | 'allTime', maxDateValue: Date | null) => {
+  const processDataByTimeFilter = (allData: CommitEntry[], filter: 'last30d' | 'last90d' | 'allTime', maxDateValue: Date | null) => {
     if (!maxDateValue || allData.length === 0) return { devs: [], commits: [] };
     
     // Filter out 'forosuru' user and filter data based on time range if needed
-    const filteredData = filter === 'last30d' 
-      ? allData.filter(entry => {
-          const entryDate = new Date(entry.date);
-          const cutoffDate = new Date(maxDateValue);
-          cutoffDate.setDate(cutoffDate.getDate() - 30);
-          return entryDate >= cutoffDate && entryDate <= maxDateValue && entry.dev !== 'forosuru';
-        })
-      : allData.filter(entry => entry.dev !== 'forosuru');
+    let filteredData = allData.filter(entry => entry.dev !== 'forosuru');
+    
+    if (filter === 'last30d') {
+      filteredData = filteredData.filter(entry => {
+        const entryDate = new Date(entry.date);
+        const cutoffDate = new Date(maxDateValue);
+        cutoffDate.setDate(cutoffDate.getDate() - 30);
+        return entryDate >= cutoffDate && entryDate <= maxDateValue;
+      });
+    } else if (filter === 'last90d') {
+      filteredData = filteredData.filter(entry => {
+        const entryDate = new Date(entry.date);
+        const cutoffDate = new Date(maxDateValue);
+        cutoffDate.setDate(cutoffDate.getDate() - 90);
+        return entryDate >= cutoffDate && entryDate <= maxDateValue;
+      });
+    }
+    // No additional filtering needed for 'allTime'
     
     // Group by dev and repo
     const byDevAndRepo: Record<string, AggregatedCommit> = {};
@@ -147,7 +158,7 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
   };
 
   // Handle time filter change
-  const handleTimeFilterChange = (filter: 'last30d' | 'allTime') => {
+  const handleTimeFilterChange = (filter: 'last30d' | 'last90d' | 'allTime') => {
     setTimeFilter(filter);
     const processedData = processDataByTimeFilter(parsedData, filter, maxDate);
     setDevLeaderboardData(processedData.devs);
@@ -238,6 +249,13 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
           const startDate = new Date(formattedData[0].date);
           const endDate = new Date(formattedData[formattedData.length - 1].date);
           setDateRange([startDate, endDate]);
+          
+          // Set default selection to start at 70% of the timeline
+          const totalTimespan = endDate.getTime() - startDate.getTime();
+          const cutoffTime = startDate.getTime() + (totalTimespan * 0.7);
+          const defaultStartDate = new Date(cutoffTime);
+          
+          setSelectedDateRange([defaultStartDate, endDate]);
         }
       } catch (err) {
         setError("Error fetching data. Please check your URL and try again.");
@@ -250,16 +268,33 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
     fetchData();
   }, [dataUrl]);
 
-  // Get filtered data based on the slider value
+  // Get filtered data based on selected range from brush
   const filteredData = () => {
     if (data.length === 0) return [];
     
-    // Calculate cutoff date based on slider value (0-100%)
-    const totalTimespan = dateRange[1].getTime() - dateRange[0].getTime();
-    const cutoffTime = dateRange[0].getTime() + (totalTimespan * (sliderValue / 100));
+    // If no range selected yet, return all data
+    if (!selectedDateRange) return data;
     
-    // Filter data to only include points after the cutoff date
-    return data.filter(point => new Date(point.date).getTime() >= cutoffTime);
+    // Filter data to only include points within the selected date range
+    return data.filter(point => {
+      const pointDate = new Date(point.date).getTime();
+      return pointDate >= selectedDateRange[0].getTime() && 
+             pointDate <= selectedDateRange[1].getTime();
+    });
+  };
+
+  // Handle brush change
+  const handleBrushChange = (brushData: any) => {
+    if (!brushData || brushData.startIndex === undefined || brushData.endIndex === undefined) return;
+    
+    // Get the actual date values from the data array based on indices
+    const startIndex = Math.max(0, Math.min(brushData.startIndex, data.length - 1));
+    const endIndex = Math.max(0, Math.min(brushData.endIndex, data.length - 1));
+    
+    const startDate = new Date(data[startIndex].date);
+    const endDate = new Date(data[endIndex].date);
+    
+    setSelectedDateRange([startDate, endDate]);
   };
 
   // Identify month-end data points
@@ -290,11 +325,6 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
     }
     
     return monthEndPoints;
-  };
-
-  // Handle slider change
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSliderValue(parseInt(e.target.value, 10));
   };
 
   // Toggle theme
@@ -403,24 +433,50 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
   
   return (
     <div className="p-3 md:p-6 mx-auto w-full rounded-lg shadow-lg" style={{ backgroundColor: currentTheme.bg }}>
+      {/* Header with Algorand Logo */}
+      <div className="relative mb-10">
+        {/* Theme Toggle - Positioned Absolutely */}
+        <div className="absolute right-0 top-0">
+          <button 
+            onClick={toggleTheme}
+            className="px-4 py-2 rounded-lg font-medium text-sm flex items-center"
+            style={{ 
+              backgroundColor: currentTheme.controlsBg,
+              color: currentTheme.secondary
+            }}
+          >
+            {darkMode ? "Light Mode" : "Dark Mode"}
+          </button>
+        </div>
+
+        <div className="flex flex-col items-center text-center pt-2">
+          <img 
+            src={darkMode ? "/algorand_dark_theme.png" : "/algorand_light_theme.png"} 
+            alt="Algorand Logo" 
+            className="h-20 md:h-24 w-auto mb-4"
+          />
+          <h1 className="text-2xl md:text-4xl font-bold mb-3" style={{ color: currentTheme.primary }}>
+            Developer Dashboard
+          </h1>
+          <p className="mt-2 text-sm md:text-base max-w-2xl text-center italic" style={{ color: currentTheme.text }}>
+            An active dev is someone who has contributed to one of the Algorand related repos 
+            (based on <a 
+              href="https://github.com/electric-capital" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ color: currentTheme.primary, textDecoration: "underline" }}
+            >Electric Capital</a> set of repos) during the last 30 days.
+          </p>
+        </div>
+      </div>
+
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-xl md:text-2xl font-bold text-center w-full md:w-auto" style={{ color: currentTheme.primary }}>Active Developers Dashboard</h1>
-        
-        {/* Theme Toggle */}
-        <button 
-          onClick={toggleTheme}
-          className="px-4 py-2 rounded-lg font-medium text-sm flex items-center self-center md:self-auto"
-          style={{ 
-            backgroundColor: currentTheme.controlsBg,
-            color: currentTheme.secondary
-          }}
-        >
-          {darkMode ? "Light Mode" : "Dark Mode"}
-        </button>
+        <h2 className="text-lg md:text-xl font-bold text-center w-full md:w-auto" style={{ color: currentTheme.primary }}>Active Developers Chart</h2>
       </div>
       
       {/* Chart */}
       <div className="mb-6 md:mb-8 p-3 md:p-4 rounded-lg" style={{ backgroundColor: currentTheme.chartBg }}>
+        {/* Main Chart */}
         <ResponsiveContainer width="100%" height={300} minHeight={300}>
           <LineChart
             data={displayData}
@@ -501,28 +557,58 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
             }
           </LineChart>
         </ResponsiveContainer>
-      </div>
-      
-      {/* Date-based Slider Control */}
-      <div className="p-3 md:p-4 rounded-lg" style={{ backgroundColor: currentTheme.controlsBg }}>
-        <h2 className="text-base md:text-lg font-semibold mb-4" style={{ color: currentTheme.primary }}>Time Range</h2>
         
-        <div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={sliderValue}
-            onChange={handleSliderChange}
-            className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-            style={{ 
-              backgroundColor: darkMode ? "#1e3a5f" : "#d1d5db",
-              accentColor: currentTheme.primary 
-            }}
-          />
+        {/* Separate Brush Chart */}
+        <div className="mt-6">
+          <p className="text-sm mb-2" style={{ color: currentTheme.text }}>
+            Select date range:
+          </p>
+          <ResponsiveContainer width="100%" height={60}>
+            <LineChart
+              data={data}
+              margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+            >
+              <XAxis 
+                dataKey="date" 
+                tick={{ fontSize: 8, fill: currentTheme.text }}
+                stroke={currentTheme.text}
+                height={20}
+                scale="time"
+              />
+              <Line
+                type="monotone"
+                dataKey="activeDevs"
+                stroke={currentTheme.primary}
+                dot={false}
+                strokeWidth={1}
+              />
+              <Brush 
+                dataKey="date"
+                height={30}
+                stroke={currentTheme.primary}
+                fill={currentTheme.controlsBg}
+                fillOpacity={0.3}
+                strokeOpacity={0.8}
+                tickFormatter={(value) => ''}
+                onChange={handleBrushChange}
+                travellerWidth={10}
+                padding={{ left: 20, right: 20 }}
+                gap={2}
+                startIndex={data.length > 0 ? Math.floor(data.length * 0.7) : undefined}
+                endIndex={data.length > 0 ? data.length - 1 : undefined}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+          
+          {/* Selection info display */}
+          {selectedDateRange && (
+            <div className="mt-2 text-xs text-center" style={{ color: currentTheme.text }}>
+              Selected: {selectedDateRange[0].toLocaleDateString()} - {selectedDateRange[1].toLocaleDateString()}
+            </div>
+          )}
         </div>
       </div>
-
+      
       {/* Developer Leaderboard */}
       <div className="mt-6 md:mt-8 p-3 md:p-4 rounded-lg" style={{ backgroundColor: currentTheme.chartBg }}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
@@ -541,6 +627,16 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
               }}
             >
               Last 30 Days
+            </button>
+            <button
+              onClick={() => handleTimeFilterChange('last90d')}
+              className="px-3 py-1 text-xs md:text-sm font-medium"
+              style={{ 
+                backgroundColor: timeFilter === 'last90d' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                color: timeFilter === 'last90d' ? currentTheme.buttonActiveText : currentTheme.text,
+              }}
+            >
+              Last 90 Days
             </button>
             <button
               onClick={() => handleTimeFilterChange('allTime')}
@@ -951,6 +1047,35 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
           </div>
         )}
       </div>
+      
+      {/* Footer */}
+      <footer className="mt-10 pt-6 border-t text-center" style={{ borderColor: currentTheme.tableBorder }}>
+        <div className="mb-4">
+          <p className="text-sm" style={{ color: currentTheme.text }}>
+            Data Source: <a 
+              href="https://github.com/electric-capital/crypto-ecosystems"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: currentTheme.primary, textDecoration: "underline" }}
+            >
+              Electric Capital Crypto Ecosystems
+            </a>
+          </p>
+          <p className="text-sm mt-2" style={{ color: currentTheme.text }}>
+            If you're working in open source crypto, submit your repository <a 
+              href="https://github.com/electric-capital/crypto-ecosystems"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: currentTheme.primary, textDecoration: "underline" }}
+            >
+               here
+            </a> to be counted.
+          </p>
+        </div>
+        <p className="text-xs pb-2" style={{ color: currentTheme.text, opacity: 0.8 }}>
+          Dashboard powered by Algorand Foundation BI team
+        </p>
+      </footer>
     </div>
   );
 }
