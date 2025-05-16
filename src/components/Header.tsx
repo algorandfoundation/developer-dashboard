@@ -49,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, currentTheme }) 
           crossOrigin="anonymous"
         />
         <h1 className="text-2xl md:text-4xl font-bold mb-3" style={{ color: currentTheme.primary }}>
-          Developer Dashboard
+          Developer Dashboard & Leaderboard
         </h1>
         <p className="mt-2 text-sm md:text-base max-w-2xl text-center italic" style={{ color: currentTheme.text }}>
           An active dev is someone who has contributed to one of the Algorand related repos 
