@@ -4,7 +4,7 @@ export const theme = {
       bg: "#ffffff",
       primary: "#2d2df1",
       secondary: "#001324",
-      text: "#333333",
+      text: "#001324",
       chartBg: "#f9fafb",
       controlsBg: "#f3f4f6",
       tableBorder: "#e5e7eb",
@@ -12,14 +12,14 @@ export const theme = {
       tableRowEven: "#ffffff",
       tableRowOdd: "#f9fafb",
       buttonActive: "#2d2df1",
-      buttonInactive: "#94a3b8",
+      buttonInactive: "#e5e7e9",
       buttonActiveText: "#ffffff"
     },
     dark: {
       bg: "#001324",
       primary: "#17cac6",
       secondary: "#ffffff",
-      text: "#e5e7eb",
+      text: "#ffffff",
       chartBg: "#0a192f",
       controlsBg: "#0f2942",
       tableBorder: "#1e3a5f",
@@ -27,7 +27,7 @@ export const theme = {
       tableRowEven: "#0a192f",
       tableRowOdd: "#112240",
       buttonActive: "#17cac6",
-      buttonInactive: "#475569",
+      buttonInactive: "#99a1a7",
       buttonActiveText: "#ffffff"
     }
   };
