@@ -26,8 +26,8 @@ export type RepoFilter = 'all' | 'foundation' | 'core' | 'ecosystem';
 
 export interface DashboardProps {
     dataUrl: string; // URL to your S3 JSON file
-    onThemeChange?: (isDarkMode: boolean) => void; // Optional callback for theme changes
-    initialDarkMode?: boolean; // Optional initial dark mode state
+    showActiveDevs: boolean; // Whether to show the Active Devs chart
+    showLeaderboard: boolean; // Whether to show the Leaderboard and Table
 }
 
 export interface ThemeColors {

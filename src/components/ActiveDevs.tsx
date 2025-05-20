@@ -17,7 +17,6 @@ interface ActiveDevsProps {
   displayData: DevDataPoint[];
   dateRange: [Date, Date];
   sliderValue: number;
-  darkMode: boolean;
   currentTheme: ThemeColors;
   handleSliderChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isMonthEnd: (dateStr: string) => boolean;
@@ -28,12 +27,12 @@ const ActiveDevs: React.FC<ActiveDevsProps> = ({
   displayData,
   dateRange,
   sliderValue,
-  darkMode,
   currentTheme,
   handleSliderChange,
   isMonthEnd
 }) => {
   const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
+  const [darkMode, setDarkMode] = useState<boolean>(document.body.classList.contains('dark-mode'));
   
   // Track window width for responsive behavior
   useEffect(() => {
@@ -45,6 +44,20 @@ const ActiveDevs: React.FC<ActiveDevsProps> = ({
     return () => {
       window.removeEventListener('resize', handleResize);
     };
+  }, []);
+
+  // Listen for theme changes
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setDarkMode(document.body.classList.contains('dark-mode'));
+        }
+      });
+    });
+
+    observer.observe(document.body, { attributes: true });
+    return () => observer.disconnect();
   }, []);
   
   // Determine if we should show data labels based on screen width and slider value

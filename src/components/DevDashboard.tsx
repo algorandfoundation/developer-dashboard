@@ -23,14 +23,14 @@ import {
   CSV_URL
 } from './utils';
 
-export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode = false }: DashboardProps) {
+export default function DevDashboard({ dataUrl, showActiveDevs, showLeaderboard }: DashboardProps) {
   // State for our data, slider, and theme
   const [data, setData] = useState<DevDataPoint[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<[Date, Date]>([new Date(), new Date()]);
   const [selectedDateRange, setSelectedDateRange] = useState<[Date, Date] | null>(null);
-  const [darkMode, setDarkMode] = useState<boolean>(initialDarkMode);
+  const [darkMode, setDarkMode] = useState<boolean>(document.body.classList.contains('dark-mode'));
   const [commitData, setCommitData] = useState<AggregatedCommit[]>([]);
   const [devLeaderboardData, setDevLeaderboardData] = useState<DevTotalCommits[]>([]);
   const [commitLoading, setCommitLoading] = useState<boolean>(true);
@@ -146,22 +146,6 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
     setSliderValue(parseFloat(e.target.value));
   };
 
-  // Toggle theme
-  const toggleTheme = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    if (onThemeChange) {
-      onThemeChange(newDarkMode);
-    }
-  };
-  
-  // Sync with external theme changes
-  useEffect(() => {
-    if (darkMode !== initialDarkMode) {
-      setDarkMode(initialDarkMode);
-    }
-  }, [initialDarkMode, darkMode]);
-
   // Handle sort change
   const handleSortChange = (columnName: 'dev' | 'repo' | 'commits') => {
     if (sortBy === columnName) {
@@ -173,6 +157,20 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
       setSortOrder('desc');
     }
   };
+
+  // Listen for theme changes
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setDarkMode(document.body.classList.contains('dark-mode'));
+        }
+      });
+    });
+
+    observer.observe(document.body, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   if (loading) {
     return (
@@ -195,50 +193,50 @@ export default function DevDashboard({ dataUrl, onThemeChange, initialDarkMode =
   return (
     <div className="p-3 md:p-6 mx-auto w-full rounded-lg shadow-lg" style={{ backgroundColor: currentTheme.bg }}>
       {/* Header with Algorand Logo */}
-      <Header 
-        darkMode={darkMode} 
-        toggleTheme={toggleTheme} 
-        currentTheme={currentTheme} 
-      />
+      <Header currentTheme={currentTheme} />
 
       {/* Active Developers Chart */}
-      <ActiveDevs
-        data={data}
-        displayData={displayData}
-        dateRange={dateRange}
-        sliderValue={sliderValue}
-        darkMode={darkMode}
-        currentTheme={currentTheme}
-        handleSliderChange={handleSliderChange}
-        isMonthEnd={isMonthEnd}
-      />
+      {showActiveDevs && (
+        <ActiveDevs
+          data={data}
+          displayData={displayData}
+          dateRange={dateRange}
+          sliderValue={sliderValue}
+          currentTheme={currentTheme}
+          handleSliderChange={handleSliderChange}
+          isMonthEnd={isMonthEnd}
+        />
+      )}
       
-      {/* Developer Leaderboard */}
-      <Leaderboard 
-        devLeaderboardData={devLeaderboardData}
-        currentTheme={currentTheme}
-        timeFilter={timeFilter}
-        handleTimeFilterChange={handleTimeFilterChange}
-        repoFilter={repoFilter}
-        setRepoFilter={setRepoFilter}
-        commitLoading={commitLoading}
-        commitError={commitError}
-      />
-      
-      {/* Repository Commits Table */}
-      <CommitDevRepo
-        commitData={commitData}
-        currentTheme={currentTheme}
-        repoFilter={repoFilter}
-        setRepoFilter={setRepoFilter}
-        commitLoading={commitLoading}
-        commitError={commitError}
-        devFilter={devFilter}
-        setDevFilter={setDevFilter}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        handleSortChange={handleSortChange}
-      />
+      {/* Developer Leaderboard and Table */}
+      {showLeaderboard && (
+        <>
+          <Leaderboard 
+            devLeaderboardData={devLeaderboardData}
+            currentTheme={currentTheme}
+            timeFilter={timeFilter}
+            handleTimeFilterChange={handleTimeFilterChange}
+            repoFilter={repoFilter}
+            setRepoFilter={setRepoFilter}
+            commitLoading={commitLoading}
+            commitError={commitError}
+          />
+          
+          <CommitDevRepo
+            commitData={commitData}
+            currentTheme={currentTheme}
+            repoFilter={repoFilter}
+            setRepoFilter={setRepoFilter}
+            commitLoading={commitLoading}
+            commitError={commitError}
+            devFilter={devFilter}
+            setDevFilter={setDevFilter}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            handleSortChange={handleSortChange}
+          />
+        </>
+      )}
       
       {/* Footer */}
       <Footer currentTheme={currentTheme} />
