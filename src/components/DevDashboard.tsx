@@ -20,10 +20,16 @@ import {
   isMonthEnd, 
   parseCSVData, 
   getMaxDate,
-  CSV_URL
+  CSV_URL,
+  DATA_URL
 } from './utils';
 
-export default function DevDashboard({ dataUrl, showActiveDevs, showLeaderboard }: DashboardProps) {
+interface DevDashboardProps {
+  showActiveDevs: boolean;
+  showLeaderboard: boolean;
+}
+
+const DevDashboard: React.FC<DevDashboardProps> = ({ showActiveDevs, showLeaderboard }) => {
   // State for our data, slider, and theme
   const [data, setData] = useState<DevDataPoint[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -109,7 +115,7 @@ export default function DevDashboard({ dataUrl, showActiveDevs, showLeaderboard 
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(dataUrl);
+        const response = await fetch(DATA_URL);
         
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -143,7 +149,7 @@ export default function DevDashboard({ dataUrl, showActiveDevs, showLeaderboard 
     };
 
     fetchData();
-  }, [dataUrl]);
+  }, []);
 
   // Get filtered data based on slider value
   const filteredData = () => {
@@ -254,3 +260,5 @@ export default function DevDashboard({ dataUrl, showActiveDevs, showLeaderboard 
     </div>
   );
 }
+
+export default DevDashboard;

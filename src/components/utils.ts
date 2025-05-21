@@ -7,11 +7,10 @@ import {
 
 // Constants
 export const CSV_URL = "https://electric-capital-af-report-bucket.s3.eu-west-1.amazonaws.com/commits_leaderboard.csv";
+export const DATA_URL = 'https://electric-capital-af-report-bucket.s3.eu-west-1.amazonaws.com/active_devs.json'; 
 export const FILTERED_USERS = ['forosuru']; // Users to filter out from data
 
-/**
- * Process data by time filter (30 days, 90 days, or all time)
- */
+// Process data by time filter (30 days, 90 days, or all time)
 export const processDataByTimeFilter = (
   allData: CommitEntry[], 
   filter: 'last30d' | 'last90d' | 'allTime',
@@ -73,9 +72,7 @@ export const processDataByTimeFilter = (
   return aggregateData(filteredData);
 };
 
-/**
- * Aggregate data by developer and repository
- */
+// Aggregate data by developer and repository
 export const aggregateData = (filteredData: CommitEntry[]) => {
   // Group by dev and repo
   const byDevAndRepo: Record<string, AggregatedCommit> = {};
@@ -91,7 +88,7 @@ export const aggregateData = (filteredData: CommitEntry[]) => {
     byDevAndRepo[key].totalCommits += entry.commits;
   });
   
-  // Group just by dev
+  // Group just by dev - leaderboard
   const byDev: Record<string, DevTotalCommits> = {};
   filteredData.forEach(entry => {
     if (!byDev[entry.dev]) {
@@ -110,9 +107,7 @@ export const aggregateData = (filteredData: CommitEntry[]) => {
   return { devs: sortedDevs, commits: sortedCommits };
 };
 
-/**
- * Filter data by date range based on slider value
- */
+// Filter data by date range based on slider value
 export const filterDataByDateRange = (
   data: DevDataPoint[], 
   dateRange: [Date, Date], 
@@ -128,9 +123,7 @@ export const filterDataByDateRange = (
   return data.filter(point => new Date(point.date).getTime() >= cutoffTime);
 };
 
-/**
- * Parse CSV data into CommitEntry objects
- */
+// Parse CSV data into CommitEntry objects
 export const parseCSVData = (csvText: string): CommitEntry[] => {
   const rows = csvText.split('\n');
   
@@ -146,9 +139,7 @@ export const parseCSVData = (csvText: string): CommitEntry[] => {
   }).filter(entry => entry.date && entry.dev && entry.repo);
 };
 
-/**
- * Get the maximum date from an array of CommitEntry objects
- */
+// Get the maximum date from an array of CommitEntry objects
 export const getMaxDate = (entries: CommitEntry[]): Date | null => {
   const dates = entries
     .map(entry => new Date(entry.date))
@@ -159,9 +150,7 @@ export const getMaxDate = (entries: CommitEntry[]): Date | null => {
   return new Date(Math.max(...dates.map(date => date.getTime())));
 };
 
-/**
- * Check if a date is at the end of a month
- */
+// Check if a date is at the end of a month
 export const isMonthEnd = (dateStr: string): boolean => {
   const date = new Date(dateStr);
   // Create a new date for the next day
@@ -172,9 +161,7 @@ export const isMonthEnd = (dateStr: string): boolean => {
   return nextDay.getMonth() !== date.getMonth();
 };
 
-/**
- * Identify month-end data points
- */
+// Identify month-end data points
 export const getMonthEndDataPoints = (dataPoints: DevDataPoint[]): DevDataPoint[] => {
   if (dataPoints.length === 0) return [];
   
