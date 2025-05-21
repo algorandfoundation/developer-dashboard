@@ -44,6 +44,39 @@ const FAQ: React.FC = () => {
       )
     },
     {
+        question: "What are the criteria for being recognized as a top contributor?",
+        answer: (
+          <p>
+            In order to be recognized as a top contributor, you must have commited to any repo which is open-sourced and submitted to the {' '}
+            <a 
+              href="https://github.com/electric-capital/crypto-ecosystems" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Electric Capital repo
+            </a>
+            . Algorand Foundation and Algorand Devs repos are not eligible for this recognition, except if they contributions are to personal repos.
+          </p>
+        )
+      },
+      {
+        question: "How often is the dashboard updated?",
+        answer: (
+          <p>
+            The dashboard is updated every 24 hours. However, if the repo has been just added, it might take a few hours to be processed.
+          </p>
+        )
+      },
+      {
+        question: "Is private repo activity considered?",
+        answer: (
+          <p>
+            Private repo activity is not considered. Only public repos and submitted to the Electric Capital repo are considered.
+          </p>
+        )
+      },
+    {
       question: "How do I submit a new repo to EC?",
       answer: (
         <p>
