@@ -14,8 +14,9 @@ export const FILTERED_USERS = ['forosuru']; // Users to filter out from data
  */
 export const processDataByTimeFilter = (
   allData: CommitEntry[], 
-  filter: 'last30d' | 'last90d' | 'allTime', 
-  maxDateValue: Date | null
+  filter: 'last30d' | 'last90d' | 'allTime',
+  maxDateValue: Date | null,
+  repoFilter: 'all' | 'foundation' | 'devrel' | 'core' | 'ecosystem' = 'all'
 ) => {
   if (!maxDateValue || allData.length === 0) return { devs: [], commits: [] };
   
@@ -47,6 +48,26 @@ export const processDataByTimeFilter = (
   } else {
     // All time
     filteredData = allData.filter(entry => !FILTERED_USERS.includes(entry.dev));
+  }
+
+  // Apply repository filter
+  if (repoFilter !== 'all') {
+    filteredData = filteredData.filter(entry => {
+      switch(repoFilter) {
+        case 'foundation':
+          return entry.repo.startsWith('algorandfoundation/');
+        case 'devrel':
+          return entry.repo.startsWith('algorand-devrel/');
+        case 'core':
+          return entry.repo.startsWith('algorand/');
+        case 'ecosystem':
+          return !entry.repo.startsWith('algorandfoundation/') && 
+                 !entry.repo.startsWith('algorand/') &&
+                 !entry.repo.startsWith('algorand-devrel/');
+        default:
+          return true;
+      }
+    });
   }
   
   return aggregateData(filteredData);

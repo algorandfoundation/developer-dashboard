@@ -49,7 +49,16 @@ export default function DevDashboard({ dataUrl, showActiveDevs, showLeaderboard 
   // Handle time filter change
   const handleTimeFilterChange = (filter: 'last30d' | 'last90d' | 'allTime') => {
     setTimeFilter(filter);
-    const processedData = processDataByTimeFilter(parsedData, filter, maxDate);
+    const processedData = processDataByTimeFilter(parsedData, filter, maxDate, repoFilter);
+    setDevLeaderboardData(processedData.devs);
+    setCommitData(processedData.commits);
+  };
+
+  // Handle repo filter change
+  const handleRepoFilterChange = (value: RepoFilter | ((prev: RepoFilter) => RepoFilter)) => {
+    const newFilter = typeof value === 'function' ? value(repoFilter) : value;
+    setRepoFilter(newFilter);
+    const processedData = processDataByTimeFilter(parsedData, timeFilter, maxDate, newFilter);
     setDevLeaderboardData(processedData.devs);
     setCommitData(processedData.commits);
   };
@@ -81,7 +90,7 @@ export default function DevDashboard({ dataUrl, showActiveDevs, showLeaderboard 
         setParsedData(parsed);
         
         // Process the data
-        const processedData = processDataByTimeFilter(parsed, timeFilter, maxDateValue);
+        const processedData = processDataByTimeFilter(parsed, timeFilter, maxDateValue, repoFilter);
         setDevLeaderboardData(processedData.devs);
         setCommitData(processedData.commits);
       } catch (err) {
@@ -93,7 +102,7 @@ export default function DevDashboard({ dataUrl, showActiveDevs, showLeaderboard 
     };
 
     fetchCommitData();
-  }, [timeFilter]);
+  }, [timeFilter, repoFilter]);
 
   // Fetch data from S3
   useEffect(() => {
@@ -217,7 +226,7 @@ export default function DevDashboard({ dataUrl, showActiveDevs, showLeaderboard 
             timeFilter={timeFilter}
             handleTimeFilterChange={handleTimeFilterChange}
             repoFilter={repoFilter}
-            setRepoFilter={setRepoFilter}
+            setRepoFilter={handleRepoFilterChange}
             commitLoading={commitLoading}
             commitError={commitError}
           />
@@ -226,7 +235,7 @@ export default function DevDashboard({ dataUrl, showActiveDevs, showLeaderboard 
             commitData={commitData}
             currentTheme={currentTheme}
             repoFilter={repoFilter}
-            setRepoFilter={setRepoFilter}
+            setRepoFilter={handleRepoFilterChange}
             commitLoading={commitLoading}
             commitError={commitError}
             devFilter={devFilter}
@@ -234,6 +243,8 @@ export default function DevDashboard({ dataUrl, showActiveDevs, showLeaderboard 
             sortBy={sortBy}
             sortOrder={sortOrder}
             handleSortChange={handleSortChange}
+            timeFilter={timeFilter}
+            handleTimeFilterChange={handleTimeFilterChange}
           />
         </>
       )}

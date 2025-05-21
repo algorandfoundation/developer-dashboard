@@ -29,42 +29,99 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
           Developer Leaderboard
         </h2>
         
-        {/* Time period toggle buttons */}
-        <div className="flex flex-wrap gap-2">
-          <div className="flex rounded-lg overflow-hidden">
+        {/* Filters */}
+        <div className="flex flex-col gap-2 w-full md:w-auto">
+          {/* Time period toggle buttons */}
+          <div className="flex justify-end">
+            <div className="flex justify-end flex-wrap gap-1">
+              <button
+                onClick={() => handleTimeFilterChange('last30d')}
+                className="px-2 py-1 text-xs font-medium rounded-lg"
+                style={{ 
+                  backgroundColor: timeFilter === 'last30d' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                  color: timeFilter === 'last30d' ? currentTheme.buttonActiveText : currentTheme.text,
+                }}
+              >
+                Last 30d
+              </button>
+              <button
+                onClick={() => handleTimeFilterChange('last90d')}
+                className="px-2 py-1 text-xs font-medium rounded-lg"
+                style={{ 
+                  backgroundColor: timeFilter === 'last90d' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                  color: timeFilter === 'last90d' ? currentTheme.buttonActiveText : currentTheme.text,
+                }}
+              >
+                Last 90d
+              </button>
+              <button
+                onClick={() => handleTimeFilterChange('allTime')}
+                className="px-2 py-1 text-xs font-medium rounded-lg"
+                style={{ 
+                  backgroundColor: timeFilter === 'allTime' ? currentTheme.buttonActive : currentTheme.buttonInactive, 
+                  color: timeFilter === 'allTime' ? currentTheme.buttonActiveText : currentTheme.text,
+                }}
+              >
+                All Time
+              </button>
+            </div>
+          </div>
+
+          {/* Repository Filter */}
+          <div className="flex justify-end flex-wrap gap-1">
             <button
-              onClick={() => handleTimeFilterChange('last30d')}
-              className="px-3 py-1 text-xs md:text-sm font-medium"
+              onClick={() => setRepoFilter('all')}
+              className="px-2 py-1 text-xs font-medium rounded-lg"
               style={{ 
-                backgroundColor: timeFilter === 'last30d' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-                color: timeFilter === 'last30d' ? currentTheme.buttonActiveText : currentTheme.text,
+                backgroundColor: repoFilter === 'all' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                color: repoFilter === 'all' ? currentTheme.buttonActiveText : currentTheme.text,
               }}
             >
-              Last 30 Days
+              All
             </button>
             <button
-              onClick={() => handleTimeFilterChange('last90d')}
-              className="px-3 py-1 text-xs md:text-sm font-medium"
+              onClick={() => setRepoFilter('foundation')}
+              className="px-2 py-1 text-xs font-medium rounded-lg"
               style={{ 
-                backgroundColor: timeFilter === 'last90d' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-                color: timeFilter === 'last90d' ? currentTheme.buttonActiveText : currentTheme.text,
+                backgroundColor: repoFilter === 'foundation' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                color: repoFilter === 'foundation' ? currentTheme.buttonActiveText : currentTheme.text,
               }}
             >
-              Last 90 Days
+              Algorand Foundation
             </button>
             <button
-              onClick={() => handleTimeFilterChange('allTime')}
-              className="px-3 py-1 text-xs md:text-sm font-medium"
+              onClick={() => setRepoFilter('devrel')}
+              className="px-2 py-1 text-xs font-medium rounded-lg"
               style={{ 
-                backgroundColor: timeFilter === 'allTime' ? currentTheme.buttonActive : currentTheme.buttonInactive, 
-                color: timeFilter === 'allTime' ? currentTheme.buttonActiveText : currentTheme.text,
+                backgroundColor: repoFilter === 'devrel' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                color: repoFilter === 'devrel' ? currentTheme.buttonActiveText : currentTheme.text,
               }}
             >
-              All Time
+              Algorand DevRel
+            </button>
+            <button
+              onClick={() => setRepoFilter('core')}
+              className="px-2 py-1 text-xs font-medium rounded-lg"
+              style={{ 
+                backgroundColor: repoFilter === 'core' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                color: repoFilter === 'core' ? currentTheme.buttonActiveText : currentTheme.text,
+              }}
+            >
+              Algorand Core
+            </button>
+            <button
+              onClick={() => setRepoFilter('ecosystem')}
+              className="px-2 py-1 text-xs font-medium rounded-lg"
+              style={{ 
+                backgroundColor: repoFilter === 'ecosystem' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                color: repoFilter === 'ecosystem' ? currentTheme.buttonActiveText : currentTheme.text,
+              }}
+            >
+              Ecosystem
             </button>
           </div>
         </div>
-    </div>
+      </div>
       
       {commitLoading ? (
         <div className="py-4 text-center" style={{ color: currentTheme.text }}>
@@ -209,7 +266,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                         const target = e.target as HTMLImageElement;
                         target.onerror = null;
                         target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E";
-                    }}
+                      }}
                     />
                   </div>
                   <a 

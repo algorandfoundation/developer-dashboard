@@ -13,6 +13,8 @@ interface CommitDevRepoProps {
   sortBy: 'dev' | 'repo' | 'commits';
   sortOrder: 'asc' | 'desc';
   handleSortChange: (columnName: 'dev' | 'repo' | 'commits') => void;
+  timeFilter: 'last30d' | 'last90d' | 'allTime';
+  handleTimeFilterChange: (filter: 'last30d' | 'last90d' | 'allTime') => void;
 }
 
 const CommitDevRepo: React.FC<CommitDevRepoProps> = ({
@@ -26,7 +28,9 @@ const CommitDevRepo: React.FC<CommitDevRepoProps> = ({
   setDevFilter,
   sortBy,
   sortOrder,
-  handleSortChange
+  handleSortChange,
+  timeFilter,
+  handleTimeFilterChange
 }) => {
   // Filter commits by repository type
   const getFilteredCommitData = () => {
@@ -80,63 +84,102 @@ const CommitDevRepo: React.FC<CommitDevRepoProps> = ({
 
   return (
     <div className="mt-6 md:mt-8 p-3 md:p-4 rounded-lg" style={{ backgroundColor: currentTheme.chartBg }}>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-        <h2 className="text-base md:text-lg font-semibold mb-2 md:mb-0" style={{ color: currentTheme.primary }}>
-          Commits by Developer & Repository
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
+        <h2 className="text-base md:text-lg font-semibold" style={{ color: currentTheme.primary }}>
+          Commits by Developer and Repository
         </h2>
         
-        {/* Repository Filter Buttons */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setRepoFilter('all')}
-            className="px-3 py-1 text-xs font-medium rounded-md"
-            style={{ 
-              backgroundColor: repoFilter === 'all' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-              color: repoFilter === 'all' ? currentTheme.buttonActiveText : currentTheme.text,
-            }}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setRepoFilter('foundation')}
-            className="px-3 py-1 text-xs font-medium rounded-md"
-            style={{ 
-              backgroundColor: repoFilter === 'foundation' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-              color: repoFilter === 'foundation' ? currentTheme.buttonActiveText : currentTheme.text,
-            }}
-          >
-            Algorand Foundation
-          </button>
-          <button
-            onClick={() => setRepoFilter('devrel')}
-            className="px-3 py-1 text-xs font-medium rounded-md"
-            style={{ 
-              backgroundColor: repoFilter === 'devrel' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-              color: repoFilter === 'devrel' ? currentTheme.buttonActiveText : currentTheme.text,
-            }}
-          >
-            Algorand Devs
-          </button>
-          <button
-            onClick={() => setRepoFilter('core')}
-            className="px-3 py-1 text-xs font-medium rounded-md"
-            style={{ 
-              backgroundColor: repoFilter === 'core' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-              color: repoFilter === 'core' ? currentTheme.buttonActiveText : currentTheme.text,
-            }}
-          >
-            Algorand Core
-          </button>
-          <button
-            onClick={() => setRepoFilter('ecosystem')}
-            className="px-3 py-1 text-xs font-medium rounded-md"
-            style={{ 
-              backgroundColor: repoFilter === 'ecosystem' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-              color: repoFilter === 'ecosystem' ? currentTheme.buttonActiveText : currentTheme.text,
-            }}
-          >
-            Ecosystem
-          </button>
+        {/* Filters */}
+        <div className="flex flex-col gap-2 w-full md:w-auto">
+          {/* Time period toggle buttons */}
+          <div className="flex justify-end">
+            <div className="flex justify-end flex-wrap gap-1">
+              <button
+                onClick={() => handleTimeFilterChange('last30d')}
+                className="px-2 py-1 text-xs font-medium rounded-lg"
+                style={{ 
+                  backgroundColor: timeFilter === 'last30d' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                  color: timeFilter === 'last30d' ? currentTheme.buttonActiveText : currentTheme.text,
+                }}
+              >
+                Last 30d
+              </button>
+              <button
+                onClick={() => handleTimeFilterChange('last90d')}
+                className="px-2 py-1 text-xs font-medium rounded-lg"
+                style={{ 
+                  backgroundColor: timeFilter === 'last90d' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                  color: timeFilter === 'last90d' ? currentTheme.buttonActiveText : currentTheme.text,
+                }}
+              >
+                Last 90d
+              </button>
+              <button
+                onClick={() => handleTimeFilterChange('allTime')}
+                className="px-2 py-1 text-xs font-medium rounded-lg"
+                style={{ 
+                  backgroundColor: timeFilter === 'allTime' ? currentTheme.buttonActive : currentTheme.buttonInactive, 
+                  color: timeFilter === 'allTime' ? currentTheme.buttonActiveText : currentTheme.text,
+                }}
+              >
+                All Time
+              </button>
+            </div>
+          </div>
+
+          {/* Repository Filter */}
+          <div className="flex justify-end flex-wrap gap-1">
+            <button
+              onClick={() => setRepoFilter('all')}
+              className="px-2 py-1 text-xs font-medium rounded-lg"
+              style={{ 
+                backgroundColor: repoFilter === 'all' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                color: repoFilter === 'all' ? currentTheme.buttonActiveText : currentTheme.text,
+              }}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setRepoFilter('foundation')}
+              className="px-2 py-1 text-xs font-medium rounded-lg"
+              style={{ 
+                backgroundColor: repoFilter === 'foundation' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                color: repoFilter === 'foundation' ? currentTheme.buttonActiveText : currentTheme.text,
+              }}
+            >
+              Algorand Foundation
+            </button>
+            <button
+              onClick={() => setRepoFilter('devrel')}
+              className="px-2 py-1 text-xs font-medium rounded-lg"
+              style={{ 
+                backgroundColor: repoFilter === 'devrel' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                color: repoFilter === 'devrel' ? currentTheme.buttonActiveText : currentTheme.text,
+              }}
+            >
+              Algorand DevRel
+            </button>
+            <button
+              onClick={() => setRepoFilter('core')}
+              className="px-2 py-1 text-xs font-medium rounded-lg"
+              style={{ 
+                backgroundColor: repoFilter === 'core' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                color: repoFilter === 'core' ? currentTheme.buttonActiveText : currentTheme.text,
+              }}
+            >
+              Algorand Core
+            </button>
+            <button
+              onClick={() => setRepoFilter('ecosystem')}
+              className="px-2 py-1 text-xs font-medium rounded-lg"
+              style={{ 
+                backgroundColor: repoFilter === 'ecosystem' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                color: repoFilter === 'ecosystem' ? currentTheme.buttonActiveText : currentTheme.text,
+              }}
+            >
+              Ecosystem
+            </button>
+          </div>
         </div>
       </div>
       
