@@ -20,8 +20,9 @@ import {
   isMonthEnd, 
   parseCSVData, 
   getMaxDate,
-  CSV_URL,
-  DATA_URL
+  fetchCSVURL,
+  fetchDataURL,
+  FILTERED_USERS
 } from './utils';
 
 interface DevDashboardProps {
@@ -74,13 +75,9 @@ const DevDashboard: React.FC<DevDashboardProps> = ({ showActiveDevs, showLeaderb
     const fetchCommitData = async () => {
       try {
         setCommitLoading(true);
-        const response = await fetch(CSV_URL);
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        
-        const csvText = await response.text();
+        const csvResponse = await fetchCSVURL();
+        const csvText = csvResponse.data;
         
         // Parse CSV data
         const parsed = parseCSVData(csvText);
@@ -115,13 +112,9 @@ const DevDashboard: React.FC<DevDashboardProps> = ({ showActiveDevs, showLeaderb
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(DATA_URL);
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        
-        const rawData = await response.json();
+        const dataResponse = await fetchDataURL();
+        const rawData = dataResponse.data;
         
         // Transform the JSON from {date: count} format to array format
         const formattedData: DevDataPoint[] = Object.keys(rawData).map(date => ({

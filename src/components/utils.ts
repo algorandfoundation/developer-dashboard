@@ -5,10 +5,15 @@ import {
   CommitEntry
 } from './types';
 
+import endpoints from './endpoints.config';
+import axios from 'axios';
+
 // Constants
-export const CSV_URL = "https://electric-capital-af-report-bucket.s3.eu-west-1.amazonaws.com/commits_leaderboard.csv";
-export const DATA_URL = 'https://electric-capital-af-report-bucket.s3.eu-west-1.amazonaws.com/active_devs.json'; 
 export const FILTERED_USERS = ['forosuru']; // Users to filter out from data
+
+// Export functions to fetch URLs
+export const fetchCSVURL = () => axios.get(endpoints.CSV_URL);
+export const fetchDataURL = () => axios.get(endpoints.DATA_URL);
 
 // Process data by time filter (30 days, 90 days, or all time)
 export const processDataByTimeFilter = (
