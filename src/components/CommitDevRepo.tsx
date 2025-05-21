@@ -33,12 +33,15 @@ const CommitDevRepo: React.FC<CommitDevRepoProps> = ({
     switch(repoFilter) {
       case 'foundation':
         return commitData.filter(entry => entry.repo.startsWith('algorandfoundation/'));
+      case 'devrel':
+        return commitData.filter(entry => entry.repo.startsWith('algorand-devrel/'));
       case 'core':
         return commitData.filter(entry => entry.repo.startsWith('algorand/'));
       case 'ecosystem':
         return commitData.filter(entry => 
           !entry.repo.startsWith('algorandfoundation/') && 
-          !entry.repo.startsWith('algorand/')
+          !entry.repo.startsWith('algorand/') &&
+          !entry.repo.startsWith('algorand-devrel/')
         );
       case 'all':
       default:
@@ -103,6 +106,16 @@ const CommitDevRepo: React.FC<CommitDevRepoProps> = ({
             }}
           >
             Algorand Foundation
+          </button>
+          <button
+            onClick={() => setRepoFilter('devrel')}
+            className="px-3 py-1 text-xs font-medium rounded-md"
+            style={{ 
+              backgroundColor: repoFilter === 'devrel' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+              color: repoFilter === 'devrel' ? currentTheme.buttonActiveText : currentTheme.text,
+            }}
+          >
+            Algorand Devs
           </button>
           <button
             onClick={() => setRepoFilter('core')}
