@@ -28,7 +28,7 @@ export const theme = {
       tableRowOdd: "#112240",
       buttonActive: "#17cac6",
       buttonInactive: "#99a1a7",
-      buttonActiveText: "#ffffff"
+      buttonActiveText: "#001324"
     }
   };
 

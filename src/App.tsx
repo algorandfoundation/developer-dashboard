@@ -52,8 +52,8 @@ const NavTabs = () => {
               to="/"
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isActive('/') 
-                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-white shadow-md' 
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#17cac6]/20'
+                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-[#ffffff] dark:text-[#001324] shadow-md' 
+                  : 'text-[#001324] dark:text-[#ffffff] hover:text-[#001324] dark:hover:text-[#ffffff] hover:bg-[#e5e7e9] dark:hover:bg-[#17cac6]/20'
               }`}
             >
               Active Devs
@@ -62,8 +62,8 @@ const NavTabs = () => {
               to="/leaderboard"
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isActive('/leaderboard') 
-                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-white shadow-md' 
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#17cac6]/20'
+                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-[#ffffff] dark:text-[#001324] shadow-md' 
+                  : 'text-[#001324] dark:text-[#ffffff] hover:text-[#001324] dark:hover:text-[#ffffff] hover:bg-[#e5e7e9] dark:hover:bg-[#17cac6]/20'
               }`}
             >
               Leaderboard
@@ -72,8 +72,8 @@ const NavTabs = () => {
               to="/faq"
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isActive('/faq') 
-                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-white shadow-md' 
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#17cac6]/20'
+                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-[#ffffff] dark:text-[#001324] shadow-md' 
+                  : 'text-[#001324] dark:text-[#ffffff] hover:text-[#001324] dark:hover:text-[#ffffff] hover:bg-[#e5e7e9] dark:hover:bg-[#17cac6]/20'
               }`}
             >
               FAQ
@@ -174,8 +174,8 @@ const NavTabs = () => {
               to="/"
               className={`block px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isActive('/') 
-                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-white shadow-md' 
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#17cac6]/20'
+                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-[#ffffff] dark:text-[#001324] shadow-md' 
+                  : 'text-[#001324] dark:text-[#ffffff] hover:text-[#001324] dark:hover:text-[#ffffff] hover:bg-[#e5e7e9] dark:hover:bg-[#17cac6]/20'
               }`}
               onClick={closeMobileMenu}
             >
@@ -185,8 +185,8 @@ const NavTabs = () => {
               to="/leaderboard"
               className={`block px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isActive('/leaderboard') 
-                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-white shadow-md' 
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#17cac6]/20'
+                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-[#ffffff] dark:text-[#001324] shadow-md' 
+                  : 'text-[#001324] dark:text-[#ffffff] hover:text-[#001324] dark:hover:text-[#ffffff] hover:bg-[#e5e7e9] dark:hover:bg-[#17cac6]/20'
               }`}
               onClick={closeMobileMenu}
             >
@@ -196,8 +196,8 @@ const NavTabs = () => {
               to="/faq"
               className={`block px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isActive('/faq') 
-                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-white shadow-md' 
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#17cac6]/20'
+                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-[#ffffff] dark:text-[#001324] shadow-md' 
+                  : 'text-[#001324] dark:text-[#ffffff] hover:text-[#001324] dark:hover:text-[#ffffff] hover:bg-[#e5e7e9] dark:hover:bg-[#17cac6]/20'
               }`}
               onClick={closeMobileMenu}
             >
