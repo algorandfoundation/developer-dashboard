@@ -179,10 +179,12 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
               {devLeaderboardData.length > 1 && (
                 <div className="text-center mx-4 w-28 flex flex-col items-center">
                   <div 
-                    className="h-24 w-20 flex items-center justify-center rounded-t-lg mb-2" 
-                    style={{ backgroundColor: currentTheme.primary, opacity: 0.8 }}
-                  >
-                    <span className="text-2xl font-bold" style={{ color: currentTheme.secondary }}>2</span>
+                    className="relative h-24 w-20 flex items-center justify-center rounded-lg mb-2 overflow-hidden">
+                    <img 
+                    src={currentTheme.leaderboard2}
+                    alt="Algorand Dashboard" 
+                    className="absolute inset-0 h-full w-full object-contain"
+                  />
                   </div>
                   <div className="rounded-full w-16 h-16 mx-auto mb-2 overflow-hidden border-2 flex items-center justify-center"
                     style={{ borderColor: currentTheme.primary }}>
@@ -213,11 +215,12 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
               
               {/* First Place */}
               <div className="text-center mx-4 -mb-4 w-32 flex flex-col items-center">
-                <div 
-                  className="h-32 w-24 flex items-center justify-center rounded-t-lg mb-2" 
-                  style={{ backgroundColor: currentTheme.primary }}
-                >
-                  <span className="text-3xl font-bold" style={{ color: currentTheme.secondary }}>1</span>
+              <div className="relative h-32 w-24 flex items-center justify-center rounded-lg mb-2 overflow-hidden">
+                  <img 
+                    src={currentTheme.leaderboard1} 
+                    alt="Algorand Dashboard" 
+                    className="absolute inset-0 h-full w-full object-contain"
+                  />
                 </div>
                 <div 
                   className="rounded-full w-20 h-20 mx-auto mb-2 overflow-hidden border-4 flex items-center justify-center"
@@ -251,11 +254,13 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
               {devLeaderboardData.length > 2 && (
                 <div className="text-center mx-4 w-28 flex flex-col items-center">
                   <div 
-                    className="h-20 w-20 flex items-center justify-center rounded-t-lg mb-2" 
-                    style={{ backgroundColor: currentTheme.primary, opacity: 0.6 }}
-                  >
-                    <span className="text-2xl font-bold" style={{ color: currentTheme.secondary }}>3</span>
-                  </div>
+                      className="relative h-20 w-20 flex items-center justify-center rounded-lg mb-2 overflow-hidden">
+                      <img 
+                    src={currentTheme.leaderboard3}
+                    alt="Algorand Dashboard" 
+                    className="absolute inset-0 h-full w-full object-contain"
+                      />
+                      </div>
                   <div className="rounded-full w-16 h-16 mx-auto mb-2 overflow-hidden border-2 flex items-center justify-center"
                     style={{ borderColor: currentTheme.primary }}>
                     <img 

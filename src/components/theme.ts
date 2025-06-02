@@ -13,7 +13,10 @@ export const theme = {
       tableRowOdd: "#f9fafb",
       buttonActive: "#2d2df1",
       buttonInactive: "#e5e7e9",
-      buttonActiveText: "#ffffff"
+      buttonActiveText: "#ffffff",
+      leaderboard1: "/leaderboard/Algorand-Developer Dashboard-1.svg",
+      leaderboard2: "/leaderboard/Algorand-Developer Dashboard-2.svg",
+      leaderboard3: "/leaderboard/Algorand-Developer Dashboard-3.svg",
     },
     dark: {
       bg: "#001324",
@@ -28,7 +31,10 @@ export const theme = {
       tableRowOdd: "#112240",
       buttonActive: "#17cac6",
       buttonInactive: "#99a1a7",
-      buttonActiveText: "#001324"
+      buttonActiveText: "#001324",
+      leaderboard1: "/leaderboard/Algorand-Developer Dashboard-1-DM.svg",
+      leaderboard2: "/leaderboard/Algorand-Developer Dashboard-2-DM.svg",
+      leaderboard3: "/leaderboard/Algorand-Developer Dashboard-3-DM.svg",
     }
   };
 
