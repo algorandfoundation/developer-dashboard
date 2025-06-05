@@ -42,7 +42,7 @@ const DevDashboard: React.FC<DevDashboardProps> = ({ showActiveDevs, showLeaderb
   const [devLeaderboardData, setDevLeaderboardData] = useState<DevTotalCommits[]>([]);
   const [commitLoading, setCommitLoading] = useState<boolean>(true);
   const [commitError, setCommitError] = useState<string | null>(null);
-  const [timeFilter, setTimeFilter] = useState<'last30d' | 'last90d' | 'allTime'>('last30d');
+  const [timeFilter, setTimeFilter] = useState<'last30d' | 'last90d' | 'last1y' | 'allTime'>('last30d');
   const [repoFilter, setRepoFilter] = useState<RepoFilter>('all');
   const [parsedData, setParsedData] = useState<CommitEntry[]>([]);
   const [sliderValue, setSliderValue] = useState<number>(80);
@@ -54,7 +54,7 @@ const DevDashboard: React.FC<DevDashboardProps> = ({ showActiveDevs, showLeaderb
   const currentTheme = darkMode ? theme.dark : theme.light;
 
   // Handle time filter change
-  const handleTimeFilterChange = (filter: 'last30d' | 'last90d' | 'allTime') => {
+  const handleTimeFilterChange = (filter: 'last30d' | 'last90d' | 'last1y' |'allTime') => {
     setTimeFilter(filter);
     const processedData = processDataByTimeFilter(parsedData, filter, maxDate, repoFilter);
     setDevLeaderboardData(processedData.devs);

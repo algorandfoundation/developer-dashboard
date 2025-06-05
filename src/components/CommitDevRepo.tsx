@@ -13,8 +13,8 @@ interface CommitDevRepoProps {
   sortBy: 'dev' | 'repo' | 'commits';
   sortOrder: 'asc' | 'desc';
   handleSortChange: (columnName: 'dev' | 'repo' | 'commits') => void;
-  timeFilter: 'last30d' | 'last90d' | 'allTime';
-  handleTimeFilterChange: (filter: 'last30d' | 'last90d' | 'allTime') => void;
+  timeFilter: 'last30d' | 'last90d' | 'last1y' | 'allTime';
+  handleTimeFilterChange: (filter: 'last30d' | 'last90d' | 'last1y' | 'allTime') => void;
 }
 
 const CommitDevRepo: React.FC<CommitDevRepoProps> = ({
@@ -36,9 +36,10 @@ const CommitDevRepo: React.FC<CommitDevRepoProps> = ({
   const getFilteredCommitData = () => {
     switch(repoFilter) {
       case 'foundation':
-        return commitData.filter(entry => entry.repo.startsWith('algorandfoundation/'));
-      case 'devrel':
-        return commitData.filter(entry => entry.repo.startsWith('algorand-devrel/'));
+        return commitData.filter(entry => 
+          entry.repo.startsWith('algorand-devrel/') || 
+          entry.repo.startsWith('algorandfoundation/')
+        );;
       case 'core':
         return commitData.filter(entry => entry.repo.startsWith('algorand/'));
       case 'ecosystem':
@@ -115,6 +116,16 @@ const CommitDevRepo: React.FC<CommitDevRepoProps> = ({
                 Last 90d
               </button>
               <button
+                onClick={() => handleTimeFilterChange('last1y')}
+                className="px-2 py-1 text-xs font-medium rounded-lg"
+                style={{ 
+                  backgroundColor: timeFilter === 'last1y' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                  color: timeFilter === 'last1y' ? currentTheme.buttonActiveText : currentTheme.text,
+                }}
+              >
+                Last 1Y
+              </button>
+              <button
                 onClick={() => handleTimeFilterChange('allTime')}
                 className="px-2 py-1 text-xs font-medium rounded-lg"
                 style={{ 
@@ -148,16 +159,6 @@ const CommitDevRepo: React.FC<CommitDevRepoProps> = ({
               }}
             >
               Algorand Foundation
-            </button>
-            <button
-              onClick={() => setRepoFilter('devrel')}
-              className="px-2 py-1 text-xs font-medium rounded-lg"
-              style={{ 
-                backgroundColor: repoFilter === 'devrel' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-                color: repoFilter === 'devrel' ? currentTheme.buttonActiveText : currentTheme.text,
-              }}
-            >
-              Algorand DevRel
             </button>
             <button
               onClick={() => setRepoFilter('core')}

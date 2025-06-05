@@ -18,9 +18,9 @@ export const fetchDataURL = () => axios.get(endpoints.DATA_URL);
 // Process data by time filter (30 days, 90 days, or all time)
 export const processDataByTimeFilter = (
   allData: CommitEntry[], 
-  filter: 'last30d' | 'last90d' | 'allTime',
+  filter: 'last30d' | 'last90d' | 'last1y' | 'allTime',
   maxDateValue: Date | null,
-  repoFilter: 'all' | 'foundation' | 'devrel' | 'core' | 'ecosystem' = 'all'
+  repoFilter: 'all' | 'foundation'| 'core' | 'ecosystem' = 'all'
 ) => {
   if (!maxDateValue || allData.length === 0) return { devs: [], commits: [] };
   
@@ -49,6 +49,17 @@ export const processDataByTimeFilter = (
       const entryDate = new Date(entry.date);
       return entryDate >= cutoffDate;
     });
+  } else if (filter === 'last1y') {
+    // Last 1 year
+    const cutoffDate = new Date(maxDateValue);
+    cutoffDate.setDate(cutoffDate.getDate() - 365);
+    filteredData = allData.filter(entry => {
+      // Filter out users in the FILTERED_USERS array
+      if (FILTERED_USERS.includes(entry.dev)) return false;
+      
+      const entryDate = new Date(entry.date);
+      return entryDate >= cutoffDate;
+    });
   } else {
     // All time
     filteredData = allData.filter(entry => !FILTERED_USERS.includes(entry.dev));
@@ -59,9 +70,8 @@ export const processDataByTimeFilter = (
     filteredData = filteredData.filter(entry => {
       switch(repoFilter) {
         case 'foundation':
-          return entry.repo.startsWith('algorandfoundation/');
-        case 'devrel':
-          return entry.repo.startsWith('algorand-devrel/');
+          return entry.repo.startsWith('algorand-devrel/') ||
+                 entry.repo.startsWith('algorandfoundation/');
         case 'core':
           return entry.repo.startsWith('algorand/');
         case 'ecosystem':

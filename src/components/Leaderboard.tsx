@@ -4,8 +4,8 @@ import { DevTotalCommits, RepoFilter } from './types';
 interface LeaderboardProps {
   devLeaderboardData: DevTotalCommits[];
   currentTheme: any;
-  timeFilter: 'last30d' | 'last90d' | 'allTime';
-  handleTimeFilterChange: (filter: 'last30d' | 'last90d' | 'allTime') => void;
+  timeFilter: 'last30d' | 'last90d' | 'last1y' | 'allTime';
+  handleTimeFilterChange: (filter: 'last30d' | 'last90d' | 'last1y' | 'allTime') => void;
   repoFilter: RepoFilter;
   setRepoFilter: React.Dispatch<React.SetStateAction<RepoFilter>>;
   commitLoading: boolean;
@@ -55,6 +55,16 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                 Last 90d
               </button>
               <button
+                onClick={() => handleTimeFilterChange('last1y')}
+                className="px-2 py-1 text-xs font-medium rounded-lg"
+                style={{ 
+                  backgroundColor: timeFilter === 'last1y' ? currentTheme.buttonActive : currentTheme.buttonInactive,
+                  color: timeFilter === 'last1y' ? currentTheme.buttonActiveText : currentTheme.text,
+                }}
+              >
+                Last 1Y
+              </button>
+              <button
                 onClick={() => handleTimeFilterChange('allTime')}
                 className="px-2 py-1 text-xs font-medium rounded-lg"
                 style={{ 
@@ -88,16 +98,6 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
               }}
             >
               Algorand Foundation
-            </button>
-            <button
-              onClick={() => setRepoFilter('devrel')}
-              className="px-2 py-1 text-xs font-medium rounded-lg"
-              style={{ 
-                backgroundColor: repoFilter === 'devrel' ? currentTheme.buttonActive : currentTheme.buttonInactive,
-                color: repoFilter === 'devrel' ? currentTheme.buttonActiveText : currentTheme.text,
-              }}
-            >
-              Algorand DevRel
             </button>
             <button
               onClick={() => setRepoFilter('core')}
@@ -217,7 +217,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
               <div className="text-center mx-4 -mb-4 w-32 flex flex-col items-center">
               <div className="relative h-32 w-24 flex items-center justify-center rounded-lg mb-2 overflow-hidden">
                   <img 
-                    src={currentTheme.leaderboard1} 
+                    src={currentTheme.leaderboard1}
                     alt="Algorand Dashboard" 
                     className="absolute inset-0 h-full w-full object-contain"
                   />

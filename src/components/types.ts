@@ -22,7 +22,7 @@ export interface DevTotalCommits {
     totalCommits: number;
 }
 
-export type RepoFilter = 'all' | 'foundation' | 'devrel' | 'core' | 'ecosystem';
+export type RepoFilter = 'all' | 'foundation' | 'core' | 'ecosystem';
 
 export interface DashboardProps {
     dataUrl: string; // URL to your S3 JSON file
