@@ -128,14 +128,22 @@ export const filterDataByDateRange = (
   dateRange: [Date, Date], 
   sliderValue: number
 ): DevDataPoint[] => {
-  if (data.length === 0) return [];
+  if (!data || data.length === 0) return [];
   
-  // Calculate cutoff date based on slider value (0-100%)
-  const totalTimespan = dateRange[1].getTime() - dateRange[0].getTime();
-  const cutoffTime = dateRange[0].getTime() + (totalTimespan * (sliderValue / 100));
+  const [startDate, endDate] = dateRange;
+  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   
-  // Filter data to only include points after the cutoff date
-  return data.filter(point => new Date(point.date).getTime() >= cutoffTime);
+  // Calculate how many days to show based on slider value
+  const daysToShow = Math.max(1, Math.ceil((totalDays * sliderValue) / 100));
+  
+  // Calculate the actual start date based on days to show
+  const actualStartDate = new Date(endDate.getTime() - (daysToShow - 1) * 24 * 60 * 60 * 1000);
+  
+  // Filter data to show only the selected range
+  return data.filter(item => {
+    const itemDate = new Date(item.date);
+    return itemDate >= actualStartDate && itemDate <= endDate;
+  });
 };
 
 // Parse CSV data into CommitEntry objects
@@ -205,3 +213,4 @@ export const getMonthEndDataPoints = (dataPoints: DevDataPoint[]): DevDataPoint[
   
   return monthEndPoints;
 }; 
+

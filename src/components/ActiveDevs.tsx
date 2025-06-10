@@ -64,10 +64,10 @@ const ActiveDevs: React.FC<ActiveDevsProps> = ({
   const shouldShowLabels = () => {
     // For mobile (under 768px), only show labels when slider is at least 90%
     if (windowWidth < 768) {
-      return sliderValue >= 90;
+      return sliderValue <= 10;
     } 
     // For larger screens, show labels when slider is at least 60%
-    return sliderValue >= 60;
+    return sliderValue <= 50;
   };
 
   return (
@@ -181,7 +181,10 @@ const ActiveDevs: React.FC<ActiveDevsProps> = ({
                 WebkitAppearance: "none",
                 height: "12px",
                 borderRadius: "6px",
-                background: `linear-gradient(to right, ${currentTheme.primary} 0%, ${currentTheme.primary} ${sliderValue}%, ${currentTheme.buttonInactive} ${sliderValue}%, ${currentTheme.buttonInactive} 100%)`,
+                // Reversed gradient: inactive on left, active on right
+                background: `linear-gradient(to left, ${currentTheme.primary} 0%, ${currentTheme.primary} ${sliderValue}%, ${currentTheme.buttonInactive} ${sliderValue}%, ${currentTheme.buttonInactive} 100%)`,
+                // Transform the slider to move the thumb to start from the left
+                direction: "rtl",
               }}
             />
             
@@ -200,8 +203,8 @@ const ActiveDevs: React.FC<ActiveDevsProps> = ({
               {!shouldShowLabels() && (
                 <div className="mt-1 italic">
                   {windowWidth < 768 ? 
-                    "Move slider to 90% to see data labels" : 
-                    "Move slider to 60% to see data labels"}
+                    "Move slider to the right to see data labels" : 
+                    "Move slider to the right to see data labels"}
                 </div>
               )}
             </div>

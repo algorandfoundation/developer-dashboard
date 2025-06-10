@@ -45,7 +45,7 @@ const DevDashboard: React.FC<DevDashboardProps> = ({ showActiveDevs, showLeaderb
   const [timeFilter, setTimeFilter] = useState<'last30d' | 'last90d' | 'last1y' | 'allTime'>('last30d');
   const [repoFilter, setRepoFilter] = useState<RepoFilter>('all');
   const [parsedData, setParsedData] = useState<CommitEntry[]>([]);
-  const [sliderValue, setSliderValue] = useState<number>(80);
+  const [sliderValue, setSliderValue] = useState<number>(20);
   const [maxDate, setMaxDate] = useState<Date | null>(null);
   const [devFilter, setDevFilter] = useState<string>('');
   const [sortBy, setSortBy] = useState<'dev' | 'repo' | 'commits'>('commits');
@@ -144,15 +144,27 @@ const DevDashboard: React.FC<DevDashboardProps> = ({ showActiveDevs, showLeaderb
     fetchData();
   }, []);
 
-  // Get filtered data based on slider value
-  const filteredData = () => {
-    return filterDataByDateRange(data, dateRange, sliderValue);
-  };
-
-  // Handle slider change
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSliderValue(parseFloat(e.target.value));
   };
+  
+  // Get filtered data based on slider value - invert the slider value for data processing
+  const filteredData = () => {
+    const proportion = sliderValue / 100; // smaller = more data
+    const [start, end] = dateRange;
+  
+    const rangeDuration = end.getTime() - start.getTime();
+    const cutoffTime = end.getTime() - (rangeDuration * proportion); // keep more when proportion is small
+  
+    const filtered = data.filter(d => {
+      const time = new Date(d.date).getTime();
+      return time >= cutoffTime && time <= end.getTime();
+    });
+  
+    return filtered;
+  };
+  
+  
 
   // Handle sort change
   const handleSortChange = (columnName: 'dev' | 'repo' | 'commits') => {
