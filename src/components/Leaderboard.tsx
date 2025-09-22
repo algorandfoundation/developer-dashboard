@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { DevTotalCommits, RepoFilter } from './types';
 
 interface LeaderboardProps {
@@ -22,6 +22,19 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
   commitLoading,
   commitError
 }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filter leaderboard data based on search term
+  const filteredLeaderboardData = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return devLeaderboardData;
+    }
+    
+    return devLeaderboardData.filter(dev =>
+      dev.dev.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [devLeaderboardData, searchTerm]);
+
   return (
     <div className="mt-6 md:mt-8 p-3 md:p-4 rounded-lg" style={{ backgroundColor: currentTheme.chartBg }}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
@@ -123,6 +136,32 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
         </div>
       </div>
       
+      {/* Developer search filter */}
+      <div className="mb-4">
+        <div className="flex items-center">
+          <label 
+            htmlFor="devFilter"
+            className="mr-2 text-xs md:text-sm font-medium" 
+            style={{ color: currentTheme.primary }}
+          >
+            Search Developer:
+          </label>
+          <input
+            id="devFilter"
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Filter by developer name..."
+            className="px-3 py-1 text-xs md:text-sm rounded-md w-full max-w-xs"
+            style={{ 
+              backgroundColor: currentTheme.controlsBg,
+              color: currentTheme.text,
+              border: `1px solid ${currentTheme.tableBorder}`
+            }}
+          />
+        </div>
+      </div>
+      
       {commitLoading ? (
         <div className="py-4 text-center" style={{ color: currentTheme.text }}>
           Loading leaderboard data...
@@ -135,48 +174,52 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
         <>
           {/* Podium for Top 3 - Mobile version */}
           <div className="flex md:hidden flex-col mb-6 space-y-4">
-            {devLeaderboardData.slice(0, 3).map((dev, index) => (
-              <div key={dev.dev} className="p-3 rounded-lg flex items-center" style={{ backgroundColor: currentTheme.controlsBg }}>
-                <div className="flex-shrink-0 mr-3">
-                  <div 
-                    className="rounded-full w-10 h-10 overflow-hidden border-2 flex items-center justify-center"
-                    style={{ borderColor: currentTheme.primary }}
-                  >
-                    <img 
-                      src={`https://github.com/${dev.dev}.png`} 
-                      alt={dev.dev}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null;
-                        target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E";
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="flex-grow">
-                  <div className="flex items-center">
-                    <div className="font-bold text-sm mr-2" style={{ color: currentTheme.primary }}>#{index + 1}</div>
-                    <a 
-                      href={`https://github.com/${dev.dev}`} 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: currentTheme.text }}
+            {filteredLeaderboardData.slice(0, 3).map((dev, index) => {
+              // Calculate the actual rank based on original data
+              const actualRank = devLeaderboardData.findIndex(d => d.dev === dev.dev) + 1;
+              return (
+                <div key={dev.dev} className="p-3 rounded-lg flex items-center" style={{ backgroundColor: currentTheme.controlsBg }}>
+                  <div className="flex-shrink-0 mr-3">
+                    <div 
+                      className="rounded-full w-10 h-10 overflow-hidden border-2 flex items-center justify-center"
+                      style={{ borderColor: currentTheme.primary }}
                     >
-                      {dev.dev}
-                    </a>
+                      <img 
+                        src={`https://github.com/${dev.dev}.png`} 
+                        alt={dev.dev}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E";
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="text-sm" style={{ color: currentTheme.text }}>{dev.totalCommits} commits</div>
+                  <div className="flex-grow">
+                    <div className="flex items-center">
+                      <div className="font-bold text-sm mr-2" style={{ color: currentTheme.primary }}>#{actualRank}</div>
+                      <a 
+                        href={`https://github.com/${dev.dev}`} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: currentTheme.text }}
+                      >
+                        {dev.dev}
+                      </a>
+                    </div>
+                    <div className="text-sm" style={{ color: currentTheme.text }}>{dev.totalCommits} commits</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           
           {/* Podium for Top 3 - Desktop version */}
-          {devLeaderboardData.length > 0 && (
+          {filteredLeaderboardData.length > 0 && (
             <div className="hidden md:flex justify-center items-end mb-8 py-4">
               {/* Second Place */}
-              {devLeaderboardData.length > 1 && (
+              {filteredLeaderboardData.length > 1 && (
                 <div className="text-center mx-4 w-28 flex flex-col items-center">
                   <div 
                     className="relative h-24 w-20 flex items-center justify-center rounded-lg mb-2 overflow-hidden">
@@ -189,8 +232,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                   <div className="rounded-full w-16 h-16 mx-auto mb-2 overflow-hidden border-2 flex items-center justify-center"
                     style={{ borderColor: currentTheme.primary }}>
                     <img 
-                      src={`https://github.com/${devLeaderboardData[1].dev}.png`} 
-                      alt={`${devLeaderboardData[1].dev}`}
+                      src={`https://github.com/${filteredLeaderboardData[1].dev}.png`} 
+                      alt={`${filteredLeaderboardData[1].dev}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -200,16 +243,16 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                     />
                   </div>
                   <a 
-                    href={`https://github.com/${devLeaderboardData[1].dev}`} 
+                    href={`https://github.com/${filteredLeaderboardData[1].dev}`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-center truncate w-full"
                     style={{ color: currentTheme.primary, fontWeight: 'bold' }}
-                    title={devLeaderboardData[1].dev}
+                    title={filteredLeaderboardData[1].dev}
                   >
-                    {devLeaderboardData[1].dev}
+                    {filteredLeaderboardData[1].dev}
                   </a>
-                  <div style={{ color: currentTheme.text }}>{devLeaderboardData[1].totalCommits} commits</div>
+                  <div style={{ color: currentTheme.text }}>{filteredLeaderboardData[1].totalCommits} commits</div>
                 </div>
               )}
               
@@ -227,8 +270,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                   style={{ borderColor: currentTheme.primary }}
                 >
                   <img 
-                    src={`https://github.com/${devLeaderboardData[0].dev}.png`} 
-                    alt={`${devLeaderboardData[0].dev}`}
+                    src={`https://github.com/${filteredLeaderboardData[0].dev}.png`} 
+                    alt={`${filteredLeaderboardData[0].dev}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -238,20 +281,20 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                   />
                 </div>
                 <a 
-                  href={`https://github.com/${devLeaderboardData[0].dev}`} 
+                  href={`https://github.com/${filteredLeaderboardData[0].dev}`} 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-center truncate w-full"
                   style={{ color: currentTheme.primary, fontWeight: 'bold', fontSize: '1.1rem' }}
-                  title={devLeaderboardData[0].dev}
+                  title={filteredLeaderboardData[0].dev}
                 >
-                  {devLeaderboardData[0].dev}
+                  {filteredLeaderboardData[0].dev}
                 </a>
-                <div style={{ color: currentTheme.text, fontWeight: 'bold' }}>{devLeaderboardData[0].totalCommits} commits</div>
+                <div style={{ color: currentTheme.text, fontWeight: 'bold' }}>{filteredLeaderboardData[0].totalCommits} commits</div>
               </div>
               
               {/* Third Place */}
-              {devLeaderboardData.length > 2 && (
+              {filteredLeaderboardData.length > 2 && (
                 <div className="text-center mx-4 w-28 flex flex-col items-center">
                   <div 
                       className="relative h-20 w-20 flex items-center justify-center rounded-lg mb-2 overflow-hidden">
@@ -264,8 +307,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                   <div className="rounded-full w-16 h-16 mx-auto mb-2 overflow-hidden border-2 flex items-center justify-center"
                     style={{ borderColor: currentTheme.primary }}>
                     <img 
-                      src={`https://github.com/${devLeaderboardData[2].dev}.png`} 
-                      alt={`${devLeaderboardData[2].dev}`}
+                      src={`https://github.com/${filteredLeaderboardData[2].dev}.png`} 
+                      alt={`${filteredLeaderboardData[2].dev}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -275,16 +318,16 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                     />
                   </div>
                   <a 
-                    href={`https://github.com/${devLeaderboardData[2].dev}`} 
+                    href={`https://github.com/${filteredLeaderboardData[2].dev}`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-center truncate w-full"
                     style={{ color: currentTheme.primary, fontWeight: 'bold' }}
-                    title={devLeaderboardData[2].dev}
+                    title={filteredLeaderboardData[2].dev}
                   >
-                    {devLeaderboardData[2].dev}
+                    {filteredLeaderboardData[2].dev}
                   </a>
-                  <div style={{ color: currentTheme.text }}>{devLeaderboardData[2].totalCommits} commits</div>
+                  <div style={{ color: currentTheme.text }}>{filteredLeaderboardData[2].totalCommits} commits</div>
                 </div>
               )}
             </div>
@@ -292,7 +335,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
           
           {/* Scrollable List for Other Developers */}
           <h3 className="text-sm md:text-md font-semibold mb-2" style={{ color: currentTheme.primary }}>
-            Other Top Contributors
+            {searchTerm ? 'Search Results' : 'Other Top Contributors'}
           </h3>
           <div className="overflow-x-auto" style={{ maxHeight: "250px", overflowY: "auto" }}>
             <table className="w-full" style={{ color: currentTheme.text }}>
@@ -310,36 +353,57 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {devLeaderboardData.slice(3).map((entry, index) => (
-                  <tr 
-                    key={entry.dev}
-                    style={{ 
-                      backgroundColor: index % 2 === 0 ? 
-                        currentTheme.tableRowEven : 
-                        currentTheme.tableRowOdd 
-                    }}
-                  >
-                    <td className="py-1 md:py-2 px-2 md:px-4 border-b text-xs md:text-sm" style={{ borderColor: currentTheme.tableBorder }}>
-                      {index + 4}
-                    </td>
-                    <td className="py-1 md:py-2 px-2 md:px-4 border-b text-xs md:text-sm" style={{ borderColor: currentTheme.tableBorder }}>
-                      <a 
-                        href={`https://github.com/${entry.dev}`} 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: currentTheme.primary, textDecoration: "underline" }}
-                      >
-                        {entry.dev}
-                      </a>
-                    </td>
-                    <td className="py-1 md:py-2 px-2 md:px-4 text-right border-b text-xs md:text-sm" style={{ borderColor: currentTheme.tableBorder }}>
-                      {entry.totalCommits}
-                    </td>
-                  </tr>
-                ))}
+                {(searchTerm ? filteredLeaderboardData : filteredLeaderboardData.slice(3)).map((entry, index) => {
+                  // Calculate the actual rank based on original data
+                  const actualRank = devLeaderboardData.findIndex(d => d.dev === entry.dev) + 1;
+                  return (
+                    <tr 
+                      key={entry.dev}
+                      style={{ 
+                        backgroundColor: index % 2 === 0 ? 
+                          currentTheme.tableRowEven : 
+                          currentTheme.tableRowOdd 
+                      }}
+                    >
+                      <td className="py-1 md:py-2 px-2 md:px-4 border-b text-xs md:text-sm" style={{ borderColor: currentTheme.tableBorder }}>
+                        {actualRank}
+                      </td>
+                      <td className="py-1 md:py-2 px-2 md:px-4 border-b text-xs md:text-sm" style={{ borderColor: currentTheme.tableBorder }}>
+                        <a 
+                          href={`https://github.com/${entry.dev}`} 
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: currentTheme.primary, textDecoration: "underline" }}
+                        >
+                          {entry.dev}
+                        </a>
+                      </td>
+                      <td className="py-1 md:py-2 px-2 md:px-4 text-right border-b text-xs md:text-sm" style={{ borderColor: currentTheme.tableBorder }}>
+                        {entry.totalCommits}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
+          
+          {/* No results message */}
+          {searchTerm && filteredLeaderboardData.length === 0 && (
+            <div className="text-center py-8" style={{ color: currentTheme.text }}>
+              <p>No developers found matching your search.</p>
+              <button 
+                onClick={() => setSearchTerm('')}
+                className="mt-2 px-4 py-2 rounded-lg text-sm"
+                style={{
+                  backgroundColor: currentTheme.buttonActive,
+                  color: currentTheme.buttonActiveText
+                }}
+              >
+                Clear Search
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

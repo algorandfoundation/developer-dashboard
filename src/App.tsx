@@ -56,16 +56,6 @@ const NavTabs = () => {
                   : 'text-[#001324] dark:text-[#ffffff] hover:text-[#001324] dark:hover:text-[#ffffff] hover:bg-[#e5e7e9] dark:hover:bg-[#17cac6]/20'
               }`}
             >
-              Active Devs
-            </Link>
-            <Link
-              to="/leaderboard"
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isActive('/leaderboard') 
-                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-[#ffffff] dark:text-[#001324] shadow-md' 
-                  : 'text-[#001324] dark:text-[#ffffff] hover:text-[#001324] dark:hover:text-[#ffffff] hover:bg-[#e5e7e9] dark:hover:bg-[#17cac6]/20'
-              }`}
-            >
               Leaderboard
             </Link>
             <Link
@@ -179,17 +169,6 @@ const NavTabs = () => {
               }`}
               onClick={closeMobileMenu}
             >
-              Active Devs
-            </Link>
-            <Link
-              to="/leaderboard"
-              className={`block px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isActive('/leaderboard') 
-                  ? 'bg-[#2d2df1] dark:bg-[#17cac6] text-[#ffffff] dark:text-[#001324] shadow-md' 
-                  : 'text-[#001324] dark:text-[#ffffff] hover:text-[#001324] dark:hover:text-[#ffffff] hover:bg-[#e5e7e9] dark:hover:bg-[#17cac6]/20'
-              }`}
-              onClick={closeMobileMenu}
-            >
               Leaderboard
             </Link>
             <Link
@@ -228,8 +207,7 @@ const App = () => {
         <NavTabs />
         <main className="container mx-auto py-8 mt-16">
           <Routes>
-            <Route path="/" element={<DevDashboard showActiveDevs={true} showLeaderboard={false} />} />
-            <Route path="/leaderboard" element={<DevDashboard showActiveDevs={false} showLeaderboard={true} />} />
+            <Route path="/" element={<DevDashboard showActiveDevs={false} showLeaderboard={true} />} />
             <Route path="/faq" element={<FAQ />} />
           </Routes>
         </main>
